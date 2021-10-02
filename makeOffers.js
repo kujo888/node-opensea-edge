@@ -12,10 +12,10 @@ const MnemonicWalletSubprovider = require("@0x/subproviders")
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
 
-const MNEMONIC =  "laundry below okay powder innocent kingdom recycle phone raw salute put shadow";
-const OWNER_ADDRESS = "0x3B2da38f83b08c98f4858EC6aeA79226856F7C24";
-const rpcUrl = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161";
-const accountAddress = "0x3B2da38f83b08c98f4858EC6aeA79226856F7C24";
+const MNEMONIC =  "";
+const OWNER_ADDRESS = "";
+const rpcUrl = "";
+const accountAddress = "";
 const startAmount = 0.000000000001;
 
 const expirationNumber = 0.1;

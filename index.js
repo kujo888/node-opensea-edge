@@ -39,6 +39,8 @@ const seaport = new OpenSeaPort(providerEngine, {
   networkName: Network.Main
 });
 
+const delay = t => new Promise(s => setTimeout(s, t * 1000));
+
 async function check_bid(tokenId, tokenAddress, maxPrice, no) {
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
@@ -52,6 +54,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     token_id: tokenId,
     side: OrderSide.Buy
   });
+
+  await delay(10);
 
   let topPrice = 0;
 
@@ -77,8 +81,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
   }
 
   // don't auction to owner
-  if (makerAddress == WALLET_ADDRESS) {
-    console.log(`${tokenAddress}'s top bidder is you currentely.`);
+  if (makerAddress == WALLET_ADDRESS.toLowerCase()) {
+    console.log(`${tokenAddress}'s top bidder is you currently.`);
     return;
   }
 
@@ -104,6 +108,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     } catch (error) {
       console.log(chalk.red("Buy Order Error: \t" + error.message));
     }
+
+    await delay(30);
   } else {
     console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
     console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);

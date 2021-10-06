@@ -100,7 +100,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
       });
       console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
     } catch (error) {
-      console.log(chalk.red("Buy Order Error: \t" + error.message));
+      console.log(chalk.red("Buy Order Error: \t" + error));
     }
   }
 }

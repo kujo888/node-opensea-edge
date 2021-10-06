@@ -66,11 +66,6 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     if (item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
       makerAddress = item.makerAccount.address;
-    } else {
-      console.log(`${tokenAddress}/${tokenId} price is higher than your offer.`);
-      console.log(`Top offer: \t ${topPrice}`);
-      console.log(`Your offer: \t ${item.currentPrice}`);
-      return;
     }
   }
 
@@ -88,7 +83,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     console.log(`Your auction Price: \t ${reAuctionPrice}`);
     
     try {
-      await seaport.createBuyOrder({
+      const offer = await seaport.createBuyOrder({
         asset: {
           tokenId,
           tokenAddress,
@@ -98,10 +93,15 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
         startAmount: reAuctionPrice,
         expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
       });
+      console.log(offer);
       console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
     } catch (error) {
-      console.log(chalk.red("Buy Order Error: \t" + error));
+      console.log(chalk.red("Buy Order Error: \t" + error.message));
     }
+  } else {
+    console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
+    console.log(`Top offer: \t ${topPrice}`);
+    console.log(`Your offer: \t ${maxPrice}`);
   }
 }
 

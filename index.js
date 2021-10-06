@@ -5,7 +5,7 @@ http.createServer(function (req, res) {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('Bot is running!');
   
-}).listen(5000);
+}).listen(process.env.PORT || 3000);
 
 const job = new CronJob(`*/5 * * * * *`, () => {
   console.log(new Date());

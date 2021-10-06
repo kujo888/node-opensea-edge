@@ -20,7 +20,6 @@ const {
 
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
-console.log(`MNEMONIC: \t\t ${PRIVATE_KEY}`);
 console.log(`INTERVAL TIME: \t every ${INTERVAL_TIME} hours`);
 console.log(`BONUS AMOUNT: \t ${BONUS_AMOUNT} ETH`);
 
@@ -50,7 +49,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
   // check if there is auction
   if (orders.length === 0) {
-    console.log(`${tokenAddress}/${tokenId} doesn't have any auctions currentely.`);
+    console.log(`${tokenAddress}/${tokenId} doesn't have any auctions currently.`);
     return;
   }
 
@@ -79,9 +78,9 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
   if (topPrice <= maxPrice * (10 ** 18)) {
     const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
     console.log(`Making your auction on ${tokenAddress}/${tokenId} ...`);
-    console.log(`Current Top Price: \t ${topPrice}`);
-    console.log(`Your auction Price: \t ${reAuctionPrice}`);
-    
+    console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
+    console.log(`Your auction Price: \t ${reAuctionPrice / (10 ** 18)}`);
+
     try {
       const offer = await seaport.createBuyOrder({
         asset: {
@@ -89,9 +88,10 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
           tokenAddress,
           schemaName: "ERC721"
         },
+        startAmount: reAuctionPrice / (10 ** 18),
         accountAddress: WALLET_ADDRESS,
-        startAmount: reAuctionPrice,
-        expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
+        paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+        // expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
       });
       console.log(offer);
       console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));

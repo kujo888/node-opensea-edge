@@ -49,13 +49,15 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
   console.log(`Your current balance: ${balance} ETH`);
 
+  await delay(20);
+
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
     token_id: tokenId,
     side: OrderSide.Buy
   });
 
-  await delay(10);
+  await delay(30);
 
   let topPrice = 0;
 
@@ -109,7 +111,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
       console.log(chalk.red("Buy Order Error: \t" + error.message));
     }
 
-    await delay(30);
+    await delay(50);
   } else {
     console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
     console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);

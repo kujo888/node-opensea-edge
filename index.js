@@ -96,20 +96,18 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
           tokenAddress,
           schemaName: "ERC721"
         },
-        startAmount: reAuctionPrice / (10 ** 18),
         accountAddress: WALLET_ADDRESS,
-        paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        startAmount: reAuctionPrice / (10 ** 18),
         expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
       });
-      console.log(offer);
-      console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
+      console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}, ${offer.hash}`));
     } catch (error) {
       console.log(chalk.red("Buy Order Error: \t" + error.message));
     }
   } else {
     console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
-    console.log(`Top offer: \t ${topPrice}`);
-    console.log(`Your offer: \t ${maxPrice}`);
+    console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
+    console.log(`Your auction Price: \t ${maxPrice}`);
   }
 }
 

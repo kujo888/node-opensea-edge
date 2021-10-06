@@ -18,17 +18,18 @@ const {
   BONUS_AMOUNT
 } = process.env;
 
-console.log(`RPC URL: \t ${RPC_URL}`);
+console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
-console.log(`INTERVAL TIME: \t every ${INTERVAL_TIME} hours`);
-console.log(`BONUS AMOUNT: \t ${BONUS_AMOUNT} ETH`);
+console.log(`MNEMONIC: \t\t ${PRIVATE_KEY}`);
+console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
+console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
 console.log("\n");
 
 const provider = new Web3.providers.HttpProvider(RPC_URL);
 const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
   mnemonic: PRIVATE_KEY,
 });
-const infuraRpcSubprovider = new RPCSubprovider({ RPC_URL });
+const infuraRpcSubprovider = new RPCSubprovider({ rpcUrl: RPC_URL });
 const providerEngine = new Web3ProviderEngine();
 providerEngine.addProvider(mnemonicWalletSubprovider);
 providerEngine.addProvider(infuraRpcSubprovider);

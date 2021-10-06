@@ -1,3 +1,4 @@
+const Web3 = require("web3");
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
 const { MnemonicWalletSubprovider } = require("@0x/subproviders");
@@ -32,12 +33,19 @@ providerEngine.addProvider(mnemonicWalletSubprovider);
 providerEngine.addProvider(infuraRpcSubprovider);
 providerEngine.start();
 
+const web3 = new Web3(providerEngine);
+
 const seaport = new OpenSeaPort(providerEngine, {
   networkName: Network.Main
 });
 
 async function check_bid(tokenId, tokenAddress, maxPrice, no) {
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
+
+  const wei = await web3.eth.getBalance(WALLET_ADDRESS);
+  const balance = web3.utils.fromWei(wei, 'ether');
+
+  console.log(`Your current balance: ${balance} ETH`);
 
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
@@ -82,18 +90,18 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     console.log(`Your auction Price: \t ${reAuctionPrice / (10 ** 18)}`);
 
     try {
-      // const offer = await seaport.createBuyOrder({
-      //   asset: {
-      //     tokenId,
-      //     tokenAddress,
-      //     schemaName: "ERC721"
-      //   },
-      //   startAmount: reAuctionPrice / (10 ** 18),
-      //   accountAddress: WALLET_ADDRESS,
-      //   paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-      //   // expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
-      // });
-      // console.log(offer);
+      const offer = await seaport.createBuyOrder({
+        asset: {
+          tokenId,
+          tokenAddress,
+          schemaName: "ERC721"
+        },
+        startAmount: reAuctionPrice / (10 ** 18),
+        accountAddress: WALLET_ADDRESS,
+        paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
+      });
+      console.log(offer);
       console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
     } catch (error) {
       console.log(chalk.red("Buy Order Error: \t" + error.message));

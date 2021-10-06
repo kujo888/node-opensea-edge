@@ -68,7 +68,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
       makerAddress = item.makerAccount.address;
     } else {
       console.log(`${tokenAddress}/${tokenId} price is higher than your offer.`);
-      console.log(`Top offer: ${topPrice}, Your offer: ${item.currentPrice}`);
+      console.log(`Top offer: ${topPrice}`);
+      console.log(`Your offer: ${item.currentPrice}`);
       return;
     }
   }

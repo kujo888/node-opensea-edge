@@ -21,8 +21,8 @@ const {
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
 console.log(`MNEMONIC: \t\t ${PRIVATE_KEY}`);
-console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
-console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
+console.log(`INTERVAL TIME: \t every ${INTERVAL_TIME} hours`);
+console.log(`BONUS AMOUNT: \t ${BONUS_AMOUNT} ETH`);
 
 const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
   mnemonic: PRIVATE_KEY,
@@ -68,8 +68,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
       makerAddress = item.makerAccount.address;
     } else {
       console.log(`${tokenAddress}/${tokenId} price is higher than your offer.`);
-      console.log(`Top offer: ${topPrice}`);
-      console.log(`Your offer: ${item.currentPrice}`);
+      console.log(`Top offer: \t ${topPrice}`);
+      console.log(`Your offer: \t ${item.currentPrice}`);
       return;
     }
   }
@@ -92,10 +92,11 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
         asset: {
           tokenId,
           tokenAddress,
+          schemaName: "ERC721"
         },
         accountAddress: WALLET_ADDRESS,
         startAmount: reAuctionPrice,
-        expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day from now
+        expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
       });
       console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
     } catch (error) {

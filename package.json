@@ -12,12 +12,11 @@
   },
   "dependencies": {
     "@0x/subproviders": "^6.6.1",
+    "chalk": "^4.1.2",
     "cron": "^1.8.2",
     "csv-parser": "^3.0.0",
     "dotenv": "^10.0.0",
-    "ethers": "^5.4.7",
     "opensea-js": "^1.2.0",
-    "web3": "^1.6.0",
     "web3-provider-engine": "^16.0.3"
   }
 }

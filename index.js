@@ -1,9 +1,9 @@
-const Web3 = require("web3");
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
 const { MnemonicWalletSubprovider } = require("@0x/subproviders");
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
+const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -23,9 +23,7 @@ console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
 console.log(`MNEMONIC: \t\t ${PRIVATE_KEY}`);
 console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
 console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
-console.log("\n");
 
-const provider = new Web3.providers.HttpProvider(RPC_URL);
 const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
   mnemonic: PRIVATE_KEY,
 });
@@ -39,8 +37,8 @@ const seaport = new OpenSeaPort(providerEngine, {
   networkName: Network.Main
 });
 
-async function check_bid(tokenId, tokenAddress, maxPrice) {
-  console.log("*********************************************");
+async function check_bid(tokenId, tokenAddress, maxPrice, no) {
+  console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
@@ -68,6 +66,10 @@ async function check_bid(tokenId, tokenAddress, maxPrice) {
     if (item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
       makerAddress = item.makerAccount.address;
+    } else {
+      console.log(`${tokenAddress}/${tokenId} price is higher than your offer.`);
+      console.log(`Top offer: ${topPrice}, Your offer: ${item.currentPrice}`);
+      return;
     }
   }
 
@@ -80,7 +82,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice) {
   // re-auction
   if (topPrice <= maxPrice * (10 ** 18)) {
     const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
-    console.log(`--- Making your auction on ${tokenAddress}/${tokenId} ---`);
+    console.log(`Making your auction on ${tokenAddress}/${tokenId} ...`);
     console.log(`Current Top Price: \t ${topPrice}`);
     console.log(`Your auction Price: \t ${reAuctionPrice}`);
     
@@ -94,9 +96,9 @@ async function check_bid(tokenId, tokenAddress, maxPrice) {
         startAmount: reAuctionPrice,
         expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day from now
       });
-      console.log(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`);
+      console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}.`));
     } catch (error) {
-      console.log("Buy Order Error: " + error.message);
+      console.log(chalk.red("Buy Order Error: \t" + error.message));
     }
   }
 }
@@ -107,7 +109,7 @@ async function makeOffer(csvRows) {
     const tokenAddress = csvRows[i]['Contract Address'];
     const maxPrice = csvRows[i]['MaxPrice'];
 
-    await check_bid(tokenId, tokenAddress, maxPrice);
+    await check_bid(tokenId, tokenAddress, maxPrice, i + 1);
   }
 }
 

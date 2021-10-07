@@ -4,7 +4,8 @@ const { OrderSide } = require("opensea-js/lib/types");
 const { MnemonicWalletSubprovider } = require("@0x/subproviders");
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
-var http = require('http');
+const WETH_ABI = require('./contracts/weth.json');
+const http = require('http');
 const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
@@ -23,13 +24,15 @@ const {
 http.createServer(function (req, res) {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('Bot is running!');
-  
+
 }).listen(process.env.PORT || 3000);
 
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
 console.log(`INTERVAL TIME: \t every ${INTERVAL_TIME} hours`);
 console.log(`BONUS AMOUNT: \t ${BONUS_AMOUNT} ETH`);
+
+const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
   mnemonic: PRIVATE_KEY,
@@ -48,23 +51,40 @@ const seaport = new OpenSeaPort(providerEngine, {
 
 const delay = t => new Promise(s => setTimeout(s, t * 1000));
 
+const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice) => {
+  try {
+    const offer = await seaport.createBuyOrder({
+      asset: {
+        tokenId,
+        tokenAddress,
+        schemaName: "ERC721"
+      },
+      accountAddress: WALLET_ADDRESS,
+      startAmount: reAuctionPrice / (10 ** 18),
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
+    });
+  
+    console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}, ${offer.hash}`));
+    console.log(chalk.yellow(`Hash code: ${offer.hash}`));
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 async function check_bid(tokenId, tokenAddress, maxPrice, no) {
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
-  const wei = await web3.eth.getBalance(WALLET_ADDRESS);
-  const balance = web3.utils.fromWei(wei, 'ether');
+  const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');
+  const wethContract = new web3.eth.Contract(WETH_ABI, WETH_CONTRACT);
+  const weth = Web3.utils.fromWei(await wethContract.methods.balanceOf(WALLET_ADDRESS).call(), 'ether');
 
-  console.log(`Your current balance: ${balance} ETH`);
-
-  await delay(20);
+  console.log(`Your balance: ${eth} ETH, ${weth} WETH`);
 
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
     token_id: tokenId,
     side: OrderSide.Buy
   });
-
-  await delay(30);
 
   let topPrice = 0;
 
@@ -91,7 +111,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
   // don't auction to owner
   if (makerAddress == WALLET_ADDRESS.toLowerCase()) {
-    console.log(`${tokenAddress}'s top bidder is you currently.`);
+    console.log(`${tokenAddress}/${tokenId}'s top bidder is you currently.`);
     return;
   }
 
@@ -103,22 +123,15 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     console.log(`Your auction Price: \t ${reAuctionPrice / (10 ** 18)}`);
 
     try {
-      const offer = await seaport.createBuyOrder({
-        asset: {
-          tokenId,
-          tokenAddress,
-          schemaName: "ERC721"
-        },
-        accountAddress: WALLET_ADDRESS,
-        startAmount: reAuctionPrice / (10 ** 18),
-        expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
-      });
-      console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}, ${offer.hash}`));
+      await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
     } catch (error) {
-      console.log(chalk.red("Buy Order Error: \t" + error.message));
+      if (error.message?.detail == "Request was throttled.") {
+        console.log(chalk.yellow("Waiting 1 min..."));  delay(60);  // 60s
+        await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
+      } else {
+        console.log(chalk.red("Buy Order Error: \t" + error.message));
+      }
     }
-
-    await delay(50);
   } else {
     console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
     console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
@@ -128,18 +141,19 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
 async function makeOffer(csvRows) {
   for (let i = 0; i < csvRows.length; i++) {
-    const tokenId = csvRows[i]['Token ID'];
-    const tokenAddress = csvRows[i]['Contract Address'];
-    const maxPrice = csvRows[i]['MaxPrice'];
+    const openseaURL = csvRows[i]['OPENSEA URLS FOR AUTO BUYING'];
+    const maxPrice = csvRows[i]['MAX BUYING PRICE'];
+    const [tokenAddress, tokenId] = openseaURL.slice(26).split('/');
 
     await check_bid(tokenId, tokenAddress, maxPrice, i + 1);
   }
+  console.log(chalk.blueBright("==========================================="));
 }
 
 function start() {
   let csvRows = [];
 
-  fs.createReadStream('NFTData.csv')
+  fs.createReadStream('opensea.csv')
     .pipe(csv())
     .on('data', (row) => {
       csvRows.push(row);
@@ -154,3 +168,4 @@ start();
 // every 6 hours
 const job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);
 job.start();
+

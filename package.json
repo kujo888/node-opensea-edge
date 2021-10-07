@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "worker": "node index.js",
+    "web": "node index.js"
   },
   "dependencies": {
     "@0x/subproviders": "^6.6.1",

@@ -29,8 +29,8 @@ http.createServer(function (req, res) {
 
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
-console.log(`INTERVAL TIME: \t every ${INTERVAL_TIME} hours`);
-console.log(`BONUS AMOUNT: \t ${BONUS_AMOUNT} ETH`);
+console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
+console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
 
 const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
@@ -51,20 +51,20 @@ const seaport = new OpenSeaPort(providerEngine, {
 
 const delay = t => new Promise(s => setTimeout(s, t * 1000));
 
-const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice) => {
+const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName = "ERC721") => {
   try {
     const offer = await seaport.createBuyOrder({
       asset: {
         tokenId,
         tokenAddress,
-        schemaName: "ERC721"
+        schemaName: schemaName
       },
       accountAddress: WALLET_ADDRESS,
       startAmount: reAuctionPrice / (10 ** 18),
       expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
     });
   
-    console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}, ${offer.hash}`));
+    console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}`));
     console.log(chalk.yellow(`Hash code: ${offer.hash}`));
   } catch (error) {
     throw new Error(error);
@@ -96,9 +96,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
   // get top offer
   for (item of orders) {
-
     // only ethereum
-    if (item.metadata.schema != "ERC721") {
+    if (!item.metadata.schema.includes("ERC")) {
       console.log(`${tokenAddress} is not on ethereum.`);
       return;
     }
@@ -125,9 +124,13 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     try {
       await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
     } catch (error) {
-      if (error.message.slice(17, 20) == "429") {
-        console.log(chalk.yellow("Waiting 1 min..."));  delay(60);  // 60s
+      if (error.message.includes("429")) {
+        console.log(chalk.yellow("Waiting 1 min 20s..."));  delay(80);  // 1min 20s
         await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
+      } else if (error.message.includes("400")) {
+        console.log("ERC1155 Contract Token.");
+        console.log(chalk.yellow("Waiting 1 min 20s..."));  delay(80);  // 1min 20s
+        await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, "ERC1155");
       } else {
         console.log(chalk.red("Buy Order Error: \t" + error.message));
       }
@@ -147,7 +150,7 @@ async function makeOffer(csvRows) {
 
     await check_bid(tokenId, tokenAddress, maxPrice, i + 1);
   }
-  console.log(chalk.blueBright("==========================================="));
+  console.log(chalk.blueBright("============================================="));
 }
 
 function start() {

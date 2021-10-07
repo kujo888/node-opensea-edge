@@ -125,7 +125,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     try {
       await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
     } catch (error) {
-      if (error.message?.detail == "Request was throttled.") {
+      if (error.message.slice(17, 20) == "429") {
         console.log(chalk.yellow("Waiting 1 min..."));  delay(60);  // 60s
         await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
       } else {

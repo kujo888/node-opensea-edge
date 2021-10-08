@@ -71,6 +71,7 @@ const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName =
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, no) {
+  delay(120);
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
   const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');

@@ -120,18 +120,23 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
     console.log(`Your auction Price: \t ${reAuctionPrice / (10 ** 18)}`);
 
-    try {
-      await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
-    } catch (error) {
-      if (error.message.includes("429")) {
-        console.log(chalk.yellow("Waiting 1 min 20s..."));  delay(80);  // 1min 20s
-        await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice);
-      } else if (error.message.includes("400")) {
-        console.log("ERC1155 Contract Token.");
-        console.log(chalk.yellow("Waiting 1 min 20s..."));  delay(80);  // 1min 20s
-        await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, "ERC1155");
-      } else {
-        console.log(chalk.red("Buy Order Error: \t" + error.message));
+    let success = false;
+    let schema = "ERC721";
+
+    while (!success) {
+      try {
+        await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, schema);
+        success = true;
+      } catch (error) {
+        if (error.message.includes("429")) {
+          console.log(chalk.yellow("Waiting 2 min..."));  delay(120); 
+        } else if (error.message.includes("400")) {
+          console.log("ERC1155 Contract Token. Retrying...");
+          console.log(chalk.yellow("Waiting 2 min..."));  delay(120);
+          schema = "ERC1155";
+        } else {
+          console.log(chalk.red("Buy Order Error: \t" + error.message));
+        }
       }
     }
   } else {

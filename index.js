@@ -18,7 +18,8 @@ const {
   WALLET_ADDRESS,
   INTERVAL_TIME,
   PRIVATE_KEY,
-  BONUS_AMOUNT
+  BONUS_AMOUNT,
+  ONLINE
 } = process.env;
 
 http.createServer(function (req, res) {
@@ -171,7 +172,11 @@ function start() {
     });
 }
 
-start();
+if (ONLINE === 1) {
+  start();
+} else {
+  console.log('app offline for maintenance')
+}
 
 // every 6 hours
 const job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);

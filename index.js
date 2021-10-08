@@ -19,7 +19,7 @@ const {
   INTERVAL_TIME,
   PRIVATE_KEY,
   BONUS_AMOUNT,
-  ONLINE
+  OFFLINE
 } = process.env;
 
 http.createServer(function (req, res) {
@@ -172,13 +172,12 @@ function start() {
     });
 }
 
-if (ONLINE === 1) {
-  start();
+if (OFFLINE == 1) {
+  console.log('App is offline for maintenance')
 } else {
-  console.log('app offline for maintenance')
+  start();
+  // run every INTERVAL_TIME hours
+  const job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);
+  job.start();
 }
-
-// every 6 hours
-const job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);
-job.start();
 

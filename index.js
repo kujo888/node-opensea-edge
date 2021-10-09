@@ -64,63 +64,64 @@ const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName =
       expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
     });
   
-    console.log(chalk.yellow(`Your new auction was made successfully on ${tokenAddress}/${tokenId}`));
-    console.log(chalk.yellow(`Hash code: ${offer.hash}`));
+    console.log(chalk.yellow(`Offer was made successfully on ${tokenAddress}/${tokenId}`));
+    console.log(chalk.yellow(`Tx hash: ${offer.hash}`));
   } catch (error) {
     throw new Error(error);
   }
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, no) {
-  delay(120);
+  await delay(60);
+
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
   const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');
   const wethContract = new web3.eth.Contract(WETH_ABI, WETH_CONTRACT);
   const weth = Web3.utils.fromWei(await wethContract.methods.balanceOf(WALLET_ADDRESS).call(), 'ether');
 
-  console.log(`Your balance: ${eth} ETH, ${weth} WETH`);
-
+  console.log(`Balance: ${eth} ETH, ${weth} WETH`);
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
     token_id: tokenId,
     side: OrderSide.Buy
   });
 
-  let topPrice = 0;
-
-  // check if there is auction
+  // check if there is offers
   if (orders.length === 0) {
-    console.log(`${tokenAddress}/${tokenId} doesn't have any auctions currently.`);
+    console.log(`${tokenAddress}/${tokenId} has no offers`);
     return;
   }
 
+  let topPrice = 0;
+  let topBidder = '';
   // get top offer
   for (item of orders) {
     // only ethereum
     if (!item.metadata.schema.includes("ERC")) {
-      console.log(`${tokenAddress} is not on ethereum.`);
+      console.log(`${tokenAddress} is not on ethereum`);
       return;
     }
-
     if (item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
-      makerAddress = item.makerAccount.address;
+      topBidder = item.makerAccount.address;
     }
   }
 
   // don't auction to owner
-  if (makerAddress == WALLET_ADDRESS.toLowerCase()) {
-    console.log(`${tokenAddress}/${tokenId}'s top bidder is you currently.`);
+  if (topBidder == WALLET_ADDRESS.toLowerCase()) {
+    console.log(`${tokenAddress}/${tokenId} top offer is you`);
     return;
   }
 
   // re-auction
   if (topPrice <= maxPrice * (10 ** 18)) {
+    await delay(60);
+
     const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
-    console.log(`Making your auction on ${tokenAddress}/${tokenId} ...`);
-    console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your auction Price: \t ${reAuctionPrice / (10 ** 18)}`);
+    console.log(`Making offer on ${tokenAddress}/${tokenId} ...`);
+    console.log(`Current highest offer: \t ${topPrice / (10 ** 18)}`);
+    console.log(`Your max offer: \t ${reAuctionPrice / (10 ** 18)}`);
 
     let success = false;
     let schema = "ERC721";
@@ -131,20 +132,22 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
         success = true;
       } catch (error) {
         if (error.message.includes("429")) {
-          console.log(chalk.yellow("Waiting 2 min..."));  delay(120); 
+          console.log(chalk.yellow("Waiting 2 min..."));  
+          await delay(120); 
         } else if (error.message.includes("400")) {
           console.log("ERC1155 Contract Token. Retrying...");
-          console.log(chalk.yellow("Waiting 2 min..."));  delay(120);
+          console.log(chalk.yellow("Waiting 2 min..."));
+          await delay(120); 
           schema = "ERC1155";
         } else {
-          console.log(chalk.red("Buy Order Error: \t" + error.message));
+          console.log(chalk.red("Offer error: \t" + error.message));
         }
       }
     }
   } else {
-    console.log(`${tokenAddress}/${tokenId} top offer price is higher than your offer.`);
-    console.log(`Current Top Price: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your auction Price: \t ${maxPrice}`);
+    console.log(`${tokenAddress}/${tokenId} top offer is higher than your max offer`);
+    console.log(`Current top offer: \t ${topPrice / (10 ** 18)}`);
+    console.log(`Your max offer: \t ${maxPrice}`);
   }
 }
 

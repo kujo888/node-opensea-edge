@@ -116,23 +116,26 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
 
   // re-auction
   if (topPrice <= maxPrice * (10 ** 18)) {
-    await delay(60);
-
     const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
     console.log(`Making offer on ${tokenAddress}/${tokenId} ...`);
     console.log(`Current highest offer: \t ${topPrice / (10 ** 18)}`);
     console.log(`Your max offer: \t ${reAuctionPrice / (10 ** 18)}`);
 
+    await delay(60);
+
     let success = false;
     let schema = "ERC721";
+    let attemptCount = 0;
 
     while (!success) {
       try {
+        attemptCount++;
+        console.log(`Offer attempt: ${attemptCount}`);
         await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, schema);
         success = true;
       } catch (error) {
         if (error.message.includes("429")) {
-          console.log(chalk.yellow("Waiting 2 min..."));  
+          console.log(chalk.yellow("Too many requests. Waiting 2 min..."));  
           await delay(120); 
         } else if (error.message.includes("400")) {
           console.log("ERC1155 Contract Token. Retrying...");

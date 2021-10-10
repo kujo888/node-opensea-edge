@@ -119,7 +119,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, no) {
     const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
     console.log(`Making offer on ${tokenAddress}/${tokenId} ...`);
     console.log(`Current highest offer: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your max offer: \t ${reAuctionPrice / (10 ** 18)}`);
+    console.log(`Your max offer: \t ${topPrice / (10 ** 18)}`);
+    console.log(`Your offer: \t ${reAuctionPrice / (10 ** 18)}`);
 
     await delay(60);
 

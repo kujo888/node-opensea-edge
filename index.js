@@ -104,7 +104,7 @@ const finalBid = async (tokenId, tokenAddress, reAuctionPrice) => {
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
-  await delay(60);
+  // await delay(60);
 
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 
@@ -147,7 +147,8 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
       }
     }
 
-    if (item.currentPrice < 1 && item.currentPrice > topPrice) {
+    // this is for buying less than 1 WETH and getting top offer
+    if (item.currentPrice < 10 ** 18 && item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
       topBidder = item.makerAccount.address;
     }

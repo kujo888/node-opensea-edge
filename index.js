@@ -24,7 +24,8 @@ const {
   BONUS_AMOUNT,
   OFFLINE,
   CSV_ONLINE_PATH,
-  CSV_LOCAL_PATH
+  CSV_LOCAL_PATH,
+  RETRY_DELAY_TIME
 } = process.env;
 
 http.createServer(function (req, res) {

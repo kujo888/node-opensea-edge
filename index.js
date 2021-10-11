@@ -104,7 +104,7 @@ const finalBid = async (tokenId, tokenAddress, reAuctionPrice) => {
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
-  // await delay(60);
+  await delay(60);
 
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
 

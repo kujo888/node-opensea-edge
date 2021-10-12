@@ -1,7 +1,7 @@
 const Web3 = require("web3");
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
-const { MnemonicWalletSubprovider } = require("@0x/subproviders");
+const { PrivateKeyWalletSubprovider } = require("@0x/subproviders");
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
 const WETH_ABI = require('./contracts/weth.json');
@@ -40,12 +40,10 @@ console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
 
 const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
-const mnemonicWalletSubprovider = new MnemonicWalletSubprovider({
-  mnemonic: PRIVATE_KEY,
-});
+const privateKeyWalletSubprovider = new PrivateKeyWalletSubprovider(PRIVATE_KEY);
 const infuraRpcSubprovider = new RPCSubprovider({ rpcUrl: RPC_URL });
 const providerEngine = new Web3ProviderEngine();
-providerEngine.addProvider(mnemonicWalletSubprovider);
+providerEngine.addProvider(privateKeyWalletSubprovider);
 providerEngine.addProvider(infuraRpcSubprovider);
 providerEngine.start();
 
@@ -85,13 +83,13 @@ const finalBid = async (tokenId, tokenAddress, reAuctionPrice) => {
 
   while (true) {
     try {
-      console.log(`Offer attempt: ${++attemptCount} times`);
       await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, schema);
       break;
     } catch (error) {
       if (error.message.includes("429")) {
         console.log(chalk.yellow(`Too many requests. Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
+        console.log(`Re-offer attempt: ${++attemptCount} times`);
       } else if (error.message.includes("400")) {
         console.log("ERC1155 Contract Token. Retrying...");
         console.log(chalk.yellow(`Waiting ${RETRY_DELAY_TIME / 60} min...`));
@@ -233,7 +231,7 @@ async function start() {
 }
 
 if (OFFLINE == 1) {
-  console.log('App is offline for maintenance.')
+  console.log('App is offline for maintenance.');
 } else {
   start();
   // run every INTERVAL_TIME hours

@@ -2,5 +2,8 @@
 
 Usage:
 
--  Set csv to use filepath in env var
-- Set retry time delay in env var
+- Set .env variables
+- Run
+
+.env variables
+- RPC_URL: rpc endpoint for getting chain data; get one from infura.

@@ -1,4 +1,5 @@
 .env
+/nft_lists/*
 
 # Logs
 logs

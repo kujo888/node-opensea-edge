@@ -36,7 +36,7 @@ http.createServer(function (req, res) {
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
 console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
-console.log(`OFFER ADD AMOUNT: \t\t ${OFFER_ADD_AMOUNT} ETH`);
+console.log(`OFFER ADD AMOUNT: \t ${OFFER_ADD_AMOUNT} ETH`);
 
 const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
@@ -114,9 +114,9 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
 
   console.log(chalk.green(`\n*******************  # ${no}  *******************`));
   console.log(`https://opensea.io/assets/${tokenAddress}/${tokenId}`);
-  console.log(`Balance: ${eth} ETH, ${weth} WETH`);
-  console.log(`Your max offer: ${maxPrice}`);
-  console.log(`Your min offer: ${minPrice}`);
+  console.log(`Balance: \t ${eth} ETH, ${weth} WETH`);
+  console.log(`Your max offer: \t ${maxPrice}`);
+  console.log(`Your min offer: \t ${minPrice}`);
 
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
@@ -214,10 +214,10 @@ async function start() {
       csvRows.push(oneRow);
     }
 
-    console.log(chalk.yellow("Have been read online csv successfully."));
+    console.log(chalk.yellow("Read online csv successfully."));
     await processCSVList(csvRows);
   } catch (error) {
-    console.log(chalk.yellow("Can not find online csv file."));
+    console.log(chalk.yellow("Cannot find online csv file."));
     console.log(chalk.yellow("Start with project folder's csv file."));
 
     fs.createReadStream(CSV_LOCAL_PATH)

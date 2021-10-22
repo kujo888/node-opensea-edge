@@ -21,7 +21,7 @@ const {
   WALLET_ADDRESS,
   INTERVAL_TIME,
   PRIVATE_KEY,
-  BONUS_AMOUNT,
+  OFFER_ADD_AMOUNT,
   OFFLINE,
   CSV_ONLINE_PATH,
   CSV_LOCAL_PATH,
@@ -36,7 +36,7 @@ http.createServer(function (req, res) {
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
 console.log(`INTERVAL TIME: \t\t every ${INTERVAL_TIME} hours`);
-console.log(`BONUS AMOUNT: \t\t ${BONUS_AMOUNT} ETH`);
+console.log(`OFFER ADD AMOUNT: \t\t ${OFFER_ADD_AMOUNT} ETH`);
 
 const WETH_CONTRACT = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
@@ -55,7 +55,7 @@ const seaport = new OpenSeaPort(providerEngine, {
 
 const delay = t => new Promise(s => setTimeout(s, t * 1000));
 
-const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName) => {
+const creatBuyOrder = async (tokenId, tokenAddress, newOffer, schemaName) => {
   try {
     const offer = await seaport.createBuyOrder({
       asset: {
@@ -64,7 +64,7 @@ const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName) 
         schemaName: schemaName
       },
       accountAddress: WALLET_ADDRESS,
-      startAmount: reAuctionPrice / (10 ** 18),
+      startAmount: newOffer / (10 ** 18),
       expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
     });
 
@@ -75,26 +75,29 @@ const creatBuyOrder = async (tokenId, tokenAddress, reAuctionPrice, schemaName) 
   }
 }
 
-const finalBid = async (tokenId, tokenAddress, reAuctionPrice) => {
+const finalBid = async (tokenId, tokenAddress, newOffer) => {
+  console.log(chalk.red(`MAKING OFFER: \t ${newOffer / (10 ** 18)}`));
+
   await delay(60);
 
-  let schema = "ERC721";
+  let schema = "ERC1155";
   let attemptCount = 0;
 
   while (true) {
     try {
-      await creatBuyOrder(tokenId, tokenAddress, reAuctionPrice, schema);
+      console.log(`Offer attempt ${++attemptCount}`);
+      await creatBuyOrder(tokenId, tokenAddress, newOffer, schema);
       break;
     } catch (error) {
       if (error.message.includes("429")) {
         console.log(chalk.yellow(`Too many requests. Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
-        console.log(`Re-offer attempt: ${++attemptCount} times`);
       } else if (error.message.includes("400")) {
-        console.log("ERC1155 Contract Token. Retrying...");
+        console.log("400 error. Retrying...");
+        console.log(error);
         console.log(chalk.yellow(`Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
-        schema = "ERC1155";
+        schema = "ERC721";
       } else {
         console.log(chalk.red("Offer error: \t" + error.message));
       }
@@ -105,26 +108,29 @@ const finalBid = async (tokenId, tokenAddress, reAuctionPrice) => {
 async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   await delay(60);
 
-  console.log(chalk.green(`\n*******************  # ${no}  *******************`));
-
   const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');
   const wethContract = new web3.eth.Contract(WETH_ABI, WETH_CONTRACT);
   const weth = Web3.utils.fromWei(await wethContract.methods.balanceOf(WALLET_ADDRESS).call(), 'ether');
 
+  console.log(chalk.green(`\n*******************  # ${no}  *******************`));
+  console.log(`https://opensea.io/assets/${tokenAddress}/${tokenId}`);
   console.log(`Balance: ${eth} ETH, ${weth} WETH`);
+  console.log(`Your max offer: ${maxPrice}`);
+  console.log(`Your min offer: ${minPrice}`);
+
   const { orders } = await seaport.api.getOrders({
     asset_contract_address: tokenAddress,
     token_id: tokenId,
     side: OrderSide.Buy
   });
 
+  let bestOffer = minPrice * (10 ** 18);
+
   // check if there is offers
   if (orders.length === 0) {
-    console.log(`${tokenAddress}/${tokenId} has no offers yet.`);
-    console.log(`Making offer on ${tokenAddress}/${tokenId} ...`);
-    console.log(`Your offer: \t ${minPrice}`);
+    console.log('has no offers');
 
-    await finalBid(tokenId, tokenAddress, minPrice);
+    await finalBid(tokenId, tokenAddress, bestOffer);
     return;
   }
 
@@ -141,46 +147,48 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
         checkedFirstOffer = true;
         continue;
       } else {
-        console.log(`${tokenAddress}/${tokenId}'s second top offer is also not on ethereum.`);
+        console.log(`second top offer is also not on ethereum.`);
         return;
       }
     }
 
-    // this is for buying less than 1 WETH and getting top offer
-    if (item.currentPrice < 10 ** 18 && item.currentPrice > topPrice) {
+    if (item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
       topBidder = item.makerAccount.address;
     }
   }
 
-  if (topPrice == 0) {
-    console.log("There is no less than 1 WETH offer.");
-    return;
-  }
+  // if (topPrice == 0) {
+  //   console.log("There is no less than 1 WETH offer.");
+  //   return;
+  // }
 
-  // don't auction to owner
+  // don't outbid self
   if (topBidder == WALLET_ADDRESS.toLowerCase()) {
-    console.log(`${tokenAddress}/${tokenId} top offer is you`);
+    console.log(`Current highest offer is you`);
     return;
   }
 
-  // re-auction
-  if (topPrice <= maxPrice * (10 ** 18)) {
-    const reAuctionPrice = topPrice + (BONUS_AMOUNT * (10 ** 18));
-    console.log(`Making offer on ${tokenAddress}/${tokenId} ...`);
-    console.log(`Current highest offer: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your max offer: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your offer: \t ${reAuctionPrice / (10 ** 18)}`);
+  console.log(`Current highest offer: ${topPrice / (10 ** 18)}`);
 
-    await finalBid(tokenId, tokenAddress, reAuctionPrice);
+  // create offer
+  if (bestOffer > topPrice + (OFFER_ADD_AMOUNT * (10 ** 18))) {
+    console.log(`Your min offer > Highest offer`);
+    
+    await finalBid(tokenId, tokenAddress, bestOffer);
+  } else if (topPrice + (OFFER_ADD_AMOUNT * (10 ** 18)) <= maxPrice * (10 ** 18)) {
+    // change bestOffer
+    bestOffer = topPrice + (OFFER_ADD_AMOUNT * (10 ** 18));
+    
+    console.log('Your max offer > Highest offer')
+    
+    await finalBid(tokenId, tokenAddress, bestOffer);
   } else {
-    console.log(`${tokenAddress}/${tokenId} top offer is higher than your max offer`);
-    console.log(`Current top offer: \t ${topPrice / (10 ** 18)}`);
-    console.log(`Your max offer: \t ${maxPrice}`);
+    console.log(`Highest offer > Your max offer`);
   }
 }
 
-async function makeOffer(csvRows) {
+async function processCSVList(csvRows) {
   for (let i = 0; i < csvRows.length; i++) {
     const openseaURL = csvRows[i][0];
     const maxPrice = csvRows[i][1];
@@ -189,7 +197,7 @@ async function makeOffer(csvRows) {
 
     await check_bid(tokenId, tokenAddress, maxPrice, minPrice, i + 1);
   }
-  console.log(chalk.blueBright("============================================="));
+  console.log(chalk.green("============================================="));
 }
 
 async function start() {
@@ -206,11 +214,11 @@ async function start() {
       csvRows.push(oneRow);
     }
 
-    console.log(chalk.blueBright("Have been read online csv successfully."));
-    await makeOffer(csvRows);
+    console.log(chalk.yellow("Have been read online csv successfully."));
+    await processCSVList(csvRows);
   } catch (error) {
-    console.log(chalk.blueBright("Can not find online csv file."));
-    console.log(chalk.blueBright("Start with project folder's csv file."));
+    console.log(chalk.yellow("Can not find online csv file."));
+    console.log(chalk.yellow("Start with project folder's csv file."));
 
     fs.createReadStream(CSV_LOCAL_PATH)
       .pipe(csv())
@@ -224,8 +232,8 @@ async function start() {
         csvRows.push(oneRow);
       })
       .on('end', async () => {
-        console.log(chalk.blueBright("Have been read project folder's csv successfully."));
-        await makeOffer(csvRows);
+        console.log(chalk.yellow("Read project folder's csv successfully."));
+        await processCSVList(csvRows);
       });
   }
 }

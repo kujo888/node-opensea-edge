@@ -25,7 +25,9 @@ const {
   OFFLINE,
   CSV_ONLINE_PATH,
   CSV_LOCAL_PATH,
-  RETRY_DELAY_TIME
+  RETRY_DELAY_TIME,
+  ONLINE_CSV,
+  FIRST_SCHEMA_NAME
 } = process.env;
 
 http.createServer(function (req, res) {
@@ -75,29 +77,22 @@ const creatBuyOrder = async (tokenId, tokenAddress, newOffer, schemaName) => {
   }
 }
 
-const finalBid = async (tokenId, tokenAddress, newOffer) => {
-  console.log(chalk.red(`MAKING OFFER: \t ${newOffer / (10 ** 18)}`));
+const finalBid = async (tokenId, tokenAddress, newOffer, schemaName) => {
+  console.log(chalk.yellow(`MAKING OFFER ON ${schemaName}: \t ${newOffer / (10 ** 18)}`));
 
   await delay(60);
 
-  let schema = "ERC1155";
   let attemptCount = 0;
 
   while (true) {
     try {
       console.log(`Offer attempt ${++attemptCount}`);
-      await creatBuyOrder(tokenId, tokenAddress, newOffer, schema);
+      await creatBuyOrder(tokenId, tokenAddress, newOffer, schemaName);
       break;
     } catch (error) {
       if (error.message.includes("429")) {
         console.log(chalk.yellow(`Too many requests. Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
-      } else if (error.message.includes("400")) {
-        console.log("400 error. Retrying...");
-        console.log(error);
-        console.log(chalk.yellow(`Waiting ${RETRY_DELAY_TIME / 60} min...`));
-        await delay(RETRY_DELAY_TIME);
-        schema = "ERC721";
       } else {
         console.log(chalk.red("Offer error: \t" + error.message));
       }
@@ -106,7 +101,7 @@ const finalBid = async (tokenId, tokenAddress, newOffer) => {
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
-  await delay(60);
+  // await delay(60);
 
   const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');
   const wethContract = new web3.eth.Contract(WETH_ABI, WETH_CONTRACT);
@@ -130,12 +125,13 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   if (orders.length === 0) {
     console.log('has no offers');
 
-    await finalBid(tokenId, tokenAddress, bestOffer);
+    await finalBid(tokenId, tokenAddress, bestOffer, FIRST_SCHEMA_NAME);
     return;
   }
 
   let topPrice = 0;
   let topBidder = '';
+  let schemaName = '';
   let checkedFirstOffer = false;
   // get top offer
   for (item of orders) {
@@ -155,6 +151,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
     if (item.currentPrice > topPrice) {
       topPrice = Number(item.currentPrice);
       topBidder = item.makerAccount.address;
+      schemaName = item.metadata.schema;
     }
   }
 
@@ -175,14 +172,14 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   if (bestOffer > topPrice + (OFFER_ADD_AMOUNT * (10 ** 18))) {
     console.log(`Your min offer > Highest offer`);
     
-    await finalBid(tokenId, tokenAddress, bestOffer);
+    await finalBid(tokenId, tokenAddress, bestOffer, schemaName);
   } else if (topPrice + (OFFER_ADD_AMOUNT * (10 ** 18)) <= maxPrice * (10 ** 18)) {
     // change bestOffer
     bestOffer = topPrice + (OFFER_ADD_AMOUNT * (10 ** 18));
     
     console.log('Your max offer > Highest offer')
     
-    await finalBid(tokenId, tokenAddress, bestOffer);
+    await finalBid(tokenId, tokenAddress, bestOffer, schemaName);
   } else {
     console.log(`Highest offer > Your max offer`);
   }
@@ -203,7 +200,7 @@ async function processCSVList(csvRows) {
 async function start() {
   let csvRows = [];
 
-  try {
+  if(ONLINE_CSV == 1) {
     console.log(chalk.yellow("Loading online csv..."));
 
     const content = await getContentByURL(CSV_ONLINE_PATH);
@@ -216,8 +213,7 @@ async function start() {
 
     console.log(chalk.yellow("Read online csv successfully."));
     await processCSVList(csvRows);
-  } catch (error) {
-    console.log(chalk.yellow("Cannot find online csv file."));
+  } else {
     console.log(chalk.yellow("Start with project folder's csv file."));
 
     fs.createReadStream(CSV_LOCAL_PATH)

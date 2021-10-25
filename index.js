@@ -27,7 +27,8 @@ const {
   CSV_LOCAL_PATH,
   RETRY_DELAY_TIME,
   ONLINE_CSV,
-  FIRST_SCHEMA_NAME
+  FIRST_SCHEMA_NAME,
+  OFFER_EXPIRE_TIME
 } = process.env;
 
 http.createServer(function (req, res) {
@@ -67,7 +68,7 @@ const creatBuyOrder = async (tokenId, tokenAddress, newOffer, schemaName) => {
       },
       accountAddress: WALLET_ADDRESS,
       startAmount: newOffer / (10 ** 18),
-      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * OFFER_EXPIRE_TIME)
     });
 
     console.log(chalk.yellow(`Offer was made successfully on ${tokenAddress}/${tokenId}`));
@@ -101,8 +102,6 @@ const finalBid = async (tokenId, tokenAddress, newOffer, schemaName) => {
 }
 
 async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
-  // await delay(60);
-
   const eth = Web3.utils.fromWei(await web3.eth.getBalance(WALLET_ADDRESS), 'ether');
   const wethContract = new web3.eth.Contract(WETH_ABI, WETH_CONTRACT);
   const weth = Web3.utils.fromWei(await wethContract.methods.balanceOf(WALLET_ADDRESS).call(), 'ether');
@@ -228,7 +227,6 @@ async function start() {
         csvRows.push(oneRow);
       })
       .on('end', async () => {
-        console.log(chalk.yellow("Read project folder's csv successfully."));
         await processCSVList(csvRows);
       });
   }

@@ -1,5 +1,4 @@
 const Web3 = require("web3");
-const openseaApi = require('api')('@opensea/v1.0#gbq4cz1cksxopxqw'); 
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
 const { PrivateKeyWalletSubprovider } = require("@0x/subproviders");
@@ -88,13 +87,15 @@ const finalBid = async (tokenId, tokenAddress, newOffer, schemaName) => {
 
   while (true) {
     try {
-      console.log(`Offer attempt ${++attemptCount}`);
+      attemptCount > 0 && console.log(`Offer re-attempt: ${attemptCount}`);
       await creatBuyOrder(tokenId, tokenAddress, newOffer, schemaName);
       break;
     } catch (error) {
       if (error.message.includes("429")) {
-        console.log(chalk.yellow(`Too many requests. Waiting ${RETRY_DELAY_TIME / 60} min...`));
+        console.error(error.message);
+        console.log(chalk.blue(`Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
+        ++attemptCount;
       } else {
         console.log(chalk.red("Offer error: \t" + error.message));
       }
@@ -123,10 +124,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
 
   // check if there is offers
   if (orders.length === 0) {
-    console.log('has no offers');
-    
-    const res = await openseaApi['retrieving-a-single-contract']({asset_contract_address: tokenAddress})
-    console.log(res);
+    console.log('Has no offers yet.');
     
     await finalBid(tokenId, tokenAddress, bestOffer, "ERC1155");
     return;

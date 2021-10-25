@@ -1,4 +1,5 @@
 const Web3 = require("web3");
+const openseaApi = require('api')('@opensea/v1.0#gbq4cz1cksxopxqw'); 
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
 const { PrivateKeyWalletSubprovider } = require("@0x/subproviders");
@@ -10,6 +11,7 @@ const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
 const fs = require('fs');
+
 const {
   getContentByURL
 } = require('./utils');
@@ -27,7 +29,6 @@ const {
   CSV_LOCAL_PATH,
   RETRY_DELAY_TIME,
   ONLINE_CSV,
-  FIRST_SCHEMA_NAME,
   OFFER_EXPIRE_TIME
 } = process.env;
 
@@ -123,8 +124,11 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   // check if there is offers
   if (orders.length === 0) {
     console.log('has no offers');
-
-    await finalBid(tokenId, tokenAddress, bestOffer, FIRST_SCHEMA_NAME);
+    
+    const res = await openseaApi['retrieving-a-single-contract']({asset_contract_address: tokenAddress})
+    console.log(res);
+    
+    await finalBid(tokenId, tokenAddress, bestOffer, "ERC1155");
     return;
   }
 

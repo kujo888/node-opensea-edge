@@ -19,6 +19,7 @@ require('dotenv').config();
 // env vars
 const {
   RPC_URL,
+  ETHERSCAN_API_KEY,
   WALLET_ADDRESS,
   INTERVAL_TIME,
   PRIVATE_KEY,
@@ -125,8 +126,25 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   // check if there is offers
   if (orders.length === 0) {
     console.log('Has no offers yet.');
-    
-    await finalBid(tokenId, tokenAddress, bestOffer, "ERC1155");
+
+    let schema = '';
+
+    /// get contract abi
+    const question = 
+      '?module=contract' + 
+      '&action=getabi' + 
+      '&address=' + tokenAddress +
+      '&apikey=' + ETHERSCAN_API_KEY;
+
+    const res = await getContentByURL('https://api.etherscan.io/api' + question);
+
+    if (res.message === 'OK') {
+      schema = res.result.includes('TransferSingle') ? 'ERC1155' : 'ERC721';
+    } else if (res.message === 'NOTOK') {
+      schema = 'ERC1155';
+    }
+
+    await finalBid(tokenId, tokenAddress, bestOffer, schema);
     return;
   }
 

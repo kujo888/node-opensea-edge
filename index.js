@@ -10,6 +10,7 @@ const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
 const fs = require('fs');
+
 const {
   getContentByURL
 } = require('./utils');
@@ -18,6 +19,7 @@ require('dotenv').config();
 // env vars
 const {
   RPC_URL,
+  ETHERSCAN_API_KEY,
   WALLET_ADDRESS,
   INTERVAL_TIME,
   PRIVATE_KEY,
@@ -27,7 +29,6 @@ const {
   CSV_LOCAL_PATH,
   RETRY_DELAY_TIME,
   ONLINE_CSV,
-  FIRST_SCHEMA_NAME,
   OFFER_EXPIRE_TIME
 } = process.env;
 
@@ -87,13 +88,15 @@ const finalBid = async (tokenId, tokenAddress, newOffer, schemaName) => {
 
   while (true) {
     try {
-      console.log(`Offer attempt ${++attemptCount}`);
+      attemptCount > 0 && console.log(`Offer re-attempt: ${attemptCount}`);
       await creatBuyOrder(tokenId, tokenAddress, newOffer, schemaName);
       break;
     } catch (error) {
       if (error.message.includes("429")) {
-        console.log(chalk.yellow(`Too many requests. Waiting ${RETRY_DELAY_TIME / 60} min...`));
+        console.error(error.message);
+        console.log(chalk.blue(`Waiting ${RETRY_DELAY_TIME / 60} min...`));
         await delay(RETRY_DELAY_TIME);
+        ++attemptCount;
       } else {
         console.log(chalk.red("Offer error: \t" + error.message));
       }
@@ -122,9 +125,26 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
 
   // check if there is offers
   if (orders.length === 0) {
-    console.log('has no offers');
+    console.log('Has no offers yet.');
 
-    await finalBid(tokenId, tokenAddress, bestOffer, FIRST_SCHEMA_NAME);
+    let schema = '';
+
+    /// get contract abi
+    const question = 
+      '?module=contract' + 
+      '&action=getabi' + 
+      '&address=' + tokenAddress +
+      '&apikey=' + ETHERSCAN_API_KEY;
+
+    const res = await getContentByURL('https://api.etherscan.io/api' + question);
+
+    if (res.message === 'OK') {
+      schema = res.result.includes('TransferSingle') ? 'ERC1155' : 'ERC721';
+    } else if (res.message === 'NOTOK') {
+      schema = 'ERC1155';
+    }
+
+    await finalBid(tokenId, tokenAddress, bestOffer, schema);
     return;
   }
 

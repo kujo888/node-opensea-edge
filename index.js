@@ -1,3 +1,5 @@
+const express = require('express');
+const fileUpload = require('express-fileupload');
 const Web3 = require("web3");
 const { OpenSeaPort, Network } = require("opensea-js");
 const { OrderSide } = require("opensea-js/lib/types");
@@ -10,11 +12,11 @@ const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
 const fs = require('fs');
+require('dotenv').config();
 
 const {
   getContentByURL
 } = require('./utils');
-require('dotenv').config();
 
 // env vars
 const {
@@ -32,10 +34,43 @@ const {
   OFFER_EXPIRE_TIME
 } = process.env;
 
-http.createServer(function (req, res) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Bot is running!');
-}).listen(process.env.PORT || 3000);
+let isStop = false;   // for restart
+let job;              // cron job
+
+const app = express();
+
+app.use('/admin', express.static(__dirname + '/index.html'));
+app.use(fileUpload());
+
+app.post('/upload', function(req, res) {
+  let csvFile;
+  let uploadPath;
+
+  if (!req.files || Object.keys(req.files).length === 0) {
+    res.status(400).send('No files were uploaded.');
+    return;
+  }
+
+  csvFile = req.files.csvfile;
+  uploadPath = __dirname + '/' + csvFile.name;
+
+  csvFile.mv(uploadPath, function(err) {
+    if (err) {
+      return res.status(500).send(err);
+    }
+   
+    // re-start bot
+    isStop = true;
+    if (job) {
+      job.stop();
+    }
+    main();
+
+    res.send(`<h2 style="text-align:center">${csvFile.name} has been uploaded & bot was restarted successfully!<h2>`);
+  });
+});
+
+app.listen(process.env.PORT || 3000, () => console.log('Bot is running'));
 
 console.log(`RPC URL: \t\t ${RPC_URL}`);
 console.log(`WALLET ADDRESS: \t ${WALLET_ADDRESS}`);
@@ -205,7 +240,11 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
 }
 
 async function processCSVList(csvRows) {
+  isStop = false;
+
   for (let i = 0; i < csvRows.length; i++) {
+    if (isStop) return;
+
     const openseaURL = csvRows[i][0];
     const maxPrice = csvRows[i][1];
     const minPrice = csvRows[i][2];
@@ -252,11 +291,15 @@ async function start() {
   }
 }
 
-if (OFFLINE == 1) {
-  console.log('App is offline for maintenance.');
-} else {
-  start();
-  // run every INTERVAL_TIME hours
-  const job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);
-  job.start();
+function main() {
+  if (OFFLINE == 1) {
+    console.log('App is offline for maintenance.');
+  } else {
+    start();
+    // run every INTERVAL_TIME hours
+    job = new CronJob(`0 */${INTERVAL_TIME} * * *`, start);
+    job.start();
+  }
 }
+
+main();

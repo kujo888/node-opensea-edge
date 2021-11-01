@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      input {
+        font-size: 20px;
+        padding: 10px 20px;
+      }
+
+      .upload-button {
+        background-color: lightgreen;
+        border: 2px solid green;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .upload-button:hover {
+        background-color: rgb(80, 185, 80);
+      }
+
+      .upload-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .upload-form form {
+        padding: 35px;
+        border: 1px solid gray;
+        border-radius: 20px;
+      }
+    </style>
+  </head>
+	<body>
+    <div class="upload-form">
+      <div>
+        <h2>&nbsp;&nbsp;Upload CSV</h2>
+        <form
+          action='/upload'
+          method='post'
+          encType="multipart/form-data">
+            <input type="file" name="csvfile" />
+            <input type='submit' value='Upload' class="upload-button" />
+        </form>
+      </div>
+    </div>
+	</body>
+</html>

@@ -1,0 +1,3 @@
+  const tokens = (await seaport.api.getPaymentTokens({ symbol: 'WETH' })).tokens;
+  console.log(tokens)
+

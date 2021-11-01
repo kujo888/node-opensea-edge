@@ -1,0 +1,146 @@
+[
+  {
+    "hash": "0x7194709c0b1dbc9a31800794ba92d3e3e544e082ad0ae74d878745e3a6d9ca41",
+    "cancelledOrFinalized": false,
+    "markedInvalid": false,
+    "metadata": {
+      "asset": {
+        "id": "10112",
+        "address": "0x76be3b62873462d2142405439777e971754e8e77",
+        "quantity": "1"
+      },
+      "schema": "ERC1155"
+    },
+    "quantity": "1",
+    "exchange": "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
+    "makerAccount": {
+      "user": {
+        "username": "vladman1995"
+      },
+      "profile_img_url": "https://storage.googleapis.com/opensea-static/opensea-profile/28.png",
+      "address": "0x2e07df27127b34d9d497ac9154309bf2740e1ca7",
+      "config": ""
+    },
+    "takerAccount": {
+      "user": {
+        "username": "NullAddress"
+      },
+      "profile_img_url": "https://storage.googleapis.com/opensea-static/opensea-profile/1.png",
+      "address": "0x0000000000000000000000000000000000000000",
+      "config": ""
+    },
+    "maker": "0x2e07df27127b34d9d497ac9154309bf2740e1ca7",
+    "taker": "0x0000000000000000000000000000000000000000",
+    "makerRelayerFee": "0",
+    "takerRelayerFee": "1250",
+    "makerProtocolFee": "0",
+    "takerProtocolFee": "0",
+    "makerReferrerFee": "0",
+    "waitingForBestCounterOrder": false,
+    "feeMethod": 1,
+    "feeRecipientAccount": {
+      "user": {
+        "username": "OS-Wallet"
+      },
+      "profile_img_url": "https://storage.googleapis.com/opensea-static/opensea-profile/28.png",
+      "address": "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073",
+      "config": "verified"
+    },
+    "feeRecipient": "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073",
+    "side": 0,
+    "saleKind": 0,
+    "target": "0x76be3b62873462d2142405439777e971754e8e77",
+    "howToCall": 0,
+    "calldata": "0xf242432a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000002e07df27127b34d9d497ac9154309bf2740e1ca70000000000000000000000000000000000000000000000000000000000002780000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000",
+    "replacementPattern": "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "staticTarget": "0x0000000000000000000000000000000000000000",
+    "staticExtradata": "0x",
+    "paymentToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "basePrice": "750000000000000000",
+    "extra": "0",
+    "currentBounty": "7500000000000000",
+    "currentPrice": "750000000000000000",
+    "createdTime": "1635790311",
+    "listingTime": "1635790208",
+    "expirationTime": "1635836460",
+    "salt": "3.824431636379631114250285968045078581105584391831830204446759224421652662725e+76",
+    "v": 27,
+    "r": "0xd6d974e3cb747c3d30551f4971434e06a6c8194636c9c72f9a4cb46ef3ad5b04",
+    "s": "0x77062800de7af74dd6918d9ee87886ec293ebe6e8ca7743b24438383cca41ae6",
+    "paymentTokenContract": {
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "decimals": 18,
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "imageUrl": "https://storage.opensea.io/files/accae6b6fb3888cbff27a013729c22dc.svg",
+      "ethPrice": "1.000000000000000",
+      "usdPrice": "4280.489999999999782000"
+    },
+    "asset": {
+      "tokenId": "10112",
+      "tokenAddress": "0x76be3b62873462d2142405439777e971754e8e77",
+      "name": "Soleia, Disciple of Gaffar [SE]",
+      "description": "Gaffar gave us his words of wisdom. Fear not the dark times, for I will show you their meaning.",
+      "owner": {
+        "user": {
+          "username": "NullAddress"
+        },
+        "profile_img_url": "https://storage.googleapis.com/opensea-static/opensea-profile/1.png",
+        "address": "0x0000000000000000000000000000000000000000",
+        "config": ""
+      },
+      "assetContract": {
+        "name": "parallel",
+        "description": "Sci-fi collectable card game with NFTs.",
+        "type": "semi-fungible",
+        "schemaName": "ERC1155",
+        "address": "0x76be3b62873462d2142405439777e971754e8e77",
+        "tokenSymbol": "LL",
+        "buyerFeeBasisPoints": 0,
+        "sellerFeeBasisPoints": 1250,
+        "openseaBuyerFeeBasisPoints": 0,
+        "openseaSellerFeeBasisPoints": 250,
+        "devBuyerFeeBasisPoints": 0,
+        "devSellerFeeBasisPoints": 1000,
+        "imageUrl": "https://lh3.googleusercontent.com/nxaymgd9aJIzLXb0r3oLO0VCMFi0Zex1ubTmEYekEKwOVq1YijOULDeT1qCjk71OTsQW47zmvZ2ZuycXorgu6WA6Wosc6CiOuVnAXGk=s120",
+        "externalLink": "http://www.parallel.life"
+      },
+      "collection": {
+        "createdDate": "2021-03-23T23:07:36.998Z",
+        "name": "Parallel Alpha",
+        "description": "Sci-fi collectable card game with NFTs.",
+        "slug": "parallelalpha",
+        "hidden": false,
+        "featured": false,
+        "featuredImageUrl": "https://lh3.googleusercontent.com/VLBlCqeKsr9T24pHX63WZ-flQo-RbZwCpeWsV_hVgUT29CfnMXxqqP8nTzclZgPaKjiveHLIHdfNAEdmFI2myzGiCwtuQEanDP1yIQ=s300",
+        "displayData": {
+          "card_display_style": "contain"
+        },
+        "paymentTokens": [],
+        "openseaBuyerFeeBasisPoints": 0,
+        "openseaSellerFeeBasisPoints": 250,
+        "devBuyerFeeBasisPoints": 0,
+        "devSellerFeeBasisPoints": 1000,
+        "payoutAddress": "0x74db0bbfde94aa80a135c5f8b60c0ca3d17332f2",
+        "imageUrl": "https://lh3.googleusercontent.com/nxaymgd9aJIzLXb0r3oLO0VCMFi0Zex1ubTmEYekEKwOVq1YijOULDeT1qCjk71OTsQW47zmvZ2ZuycXorgu6WA6Wosc6CiOuVnAXGk=s120",
+        "largeImageUrl": "https://lh3.googleusercontent.com/VLBlCqeKsr9T24pHX63WZ-flQo-RbZwCpeWsV_hVgUT29CfnMXxqqP8nTzclZgPaKjiveHLIHdfNAEdmFI2myzGiCwtuQEanDP1yIQ=s300",
+        "externalLink": "http://www.parallel.life",
+        "wikiLink": null
+      },
+      "orders": null,
+      "sellOrders": null,
+      "buyOrders": null,
+      "imageUrl": "https://lh3.googleusercontent.com/DbJ5lGLrGTpbGPdUjGh_qlAUpyLrwQmHfUFvjiIMlJpsHt3L5UwC_h-A8zaHqlw1yC_xfVJgKX5AqfrlNMk5N3WoT8nMC5nqX2fw=s250",
+      "imagePreviewUrl": "https://lh3.googleusercontent.com/DbJ5lGLrGTpbGPdUjGh_qlAUpyLrwQmHfUFvjiIMlJpsHt3L5UwC_h-A8zaHqlw1yC_xfVJgKX5AqfrlNMk5N3WoT8nMC5nqX2fw=s250",
+      "imageUrlOriginal": "https://ipfs.io/ipfs/QmYv84QZgSDRzMHgaBtqQURZs5srDFiBXMDC2e9ix7Ja9j/image.png",
+      "imageUrlThumbnail": "https://lh3.googleusercontent.com/DbJ5lGLrGTpbGPdUjGh_qlAUpyLrwQmHfUFvjiIMlJpsHt3L5UwC_h-A8zaHqlw1yC_xfVJgKX5AqfrlNMk5N3WoT8nMC5nqX2fw=s128",
+      "externalLink": "https://rarible.com/token/0x76be3b62873462d2142405439777e971754e8e77:10112",
+      "openseaLink": "https://opensea.io/assets/0x76be3b62873462d2142405439777e971754e8e77/10112",
+      "numSales": 176,
+      "lastSale": null,
+      "backgroundColor": null,
+      "transferFee": null,
+      "transferFeePaymentToken": null
+    }
+  }
+]

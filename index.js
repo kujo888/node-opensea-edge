@@ -187,6 +187,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   let topBidder = '';
   let schemaName = '';
   let checkedFirstOffer = false;
+
   // get top offer
   for (item of orders) {
     // only ethereum
@@ -200,6 +201,15 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
         console.log(`second top offer is also not on ethereum.`);
         return;
       }
+    }
+
+    // check expirationTime of first item
+    let curTime = new Date ();
+    let limitTime = new Date ( curTime );
+    limitTime.setHours ( curTime.getHours() + INTERVAL_TIME );
+
+    if (item.expirationTime < limitTime.getTime() / 1000 && orders.length > 1) {
+      continue;
     }
 
     if (item.currentPrice > topPrice) {

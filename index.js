@@ -15,8 +15,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const {
-  getContentByURL,
-  saveAsJSON
+  getContentByURL
 } = require('./utils');
 
 // env vars

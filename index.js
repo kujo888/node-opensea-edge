@@ -212,7 +212,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
     }
 
     if (item.currentPrice / item.metadata.asset.quantity > topPrice) {
-      topPrice = Number(item.currentPrice);
+      topPrice = Number(item.currentPrice / item.metadata.asset.quantity);
       topBidder = item.makerAccount.address;
       schemaName = item.metadata.schema;
     }
@@ -229,7 +229,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
     return;
   }
 
-  console.log(`Current highest offer: ${topPrice / (10 ** 18)}`);
+  console.log(`Current highest offer: \t ${topPrice / (10 ** 18)}`);
 
   // create offer
   if (bestOffer > topPrice + (OFFER_ADD_AMOUNT * (10 ** 18))) {

@@ -2,6 +2,11 @@
   "name": "node-opensea-edge",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": "^14.17.3",
+    "yarn": "^1.22.15",
+    "npm": "^6.14.13"
+  },
   "scripts": {
     "start": "node index.js",
     "worker": "node index.js",

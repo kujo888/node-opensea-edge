@@ -1,8 +1,7 @@
 {
-  "name": "opensea-autobidder",
+  "name": "node-opensea-edge",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
   "engines": {
     "node": "^12.22.7",
     "yarn": "^1.22.17",

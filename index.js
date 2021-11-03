@@ -212,7 +212,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
       continue;
     }
 
-    if (item.currentPrice > topPrice) {
+    if (item.currentPrice / item.metadata.asset.quantity > topPrice) {
       topPrice = Number(item.currentPrice);
       topBidder = item.makerAccount.address;
       schemaName = item.metadata.schema;

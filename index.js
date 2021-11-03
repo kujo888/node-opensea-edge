@@ -205,7 +205,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
     // check expirationTime of first item
     let curTime = new Date ();
     let limitTime = new Date ( curTime );
-    limitTime.setHours ( curTime.getHours() + 6 );
+    limitTime.setHours ( curTime.getHours() + Number(INTERVAL_TIME || 6) );
 
     if (Number(item.expirationTime) < Number(limitTime.getTime()) / 1000 && orders.length > 1) {
       continue;

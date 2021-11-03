@@ -7,7 +7,6 @@ const { PrivateKeyWalletSubprovider } = require("@0x/subproviders");
 const RPCSubprovider = require("web3-provider-engine/subproviders/rpc");
 const Web3ProviderEngine = require("web3-provider-engine");
 const WETH_ABI = require('./contracts/weth.json');
-const http = require('http');
 const chalk = require("chalk");
 const { CronJob } = require('cron');
 const csv = require('csv-parser');
@@ -187,7 +186,7 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   let topBidder = '';
   let schemaName = '';
   let checkedFirstOffer = false;
-
+  
   // get top offer
   for (item of orders) {
     // only ethereum
@@ -206,9 +205,9 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
     // check expirationTime of first item
     let curTime = new Date ();
     let limitTime = new Date ( curTime );
-    limitTime.setHours ( curTime.getHours() + INTERVAL_TIME );
+    limitTime.setHours ( curTime.getHours() + 6 );
 
-    if (item.expirationTime < limitTime.getTime() / 1000 && orders.length > 1) {
+    if (Number(item.expirationTime) < Number(limitTime.getTime()) / 1000 && orders.length > 1) {
       continue;
     }
 

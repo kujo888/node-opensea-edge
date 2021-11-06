@@ -185,43 +185,36 @@ async function check_bid(tokenId, tokenAddress, maxPrice, minPrice, no) {
   let topPrice = 0;
   let topBidder = '';
   let schemaName = '';
-  let checkedFirstOffer = false;
   
   // get top offer
   for (item of orders) {
     // only ethereum
     if (!item.metadata.schema.includes("ERC")) {
       console.log(`${tokenAddress}/${tokenId} is not on ethereum.`);
-      
-      if (!checkedFirstOffer) {
-        checkedFirstOffer = true;
+    }
+
+    // Don't ignore your own offers
+    if (item.makerAccount.address !== WALLET_ADDRESS.toLowerCase()) {
+      // check expirationTime of first item
+      let curTime = new Date ();
+      let limitTime = new Date ( curTime );
+      limitTime.setHours ( curTime.getHours() + Number(INTERVAL_TIME || 6) );
+
+      if (Number(item.expirationTime) < Number(limitTime.getTime()) / 1000 && orders.length > 1) {
         continue;
-      } else {
-        console.log(`second top offer is also not on ethereum.`);
-        return;
+      }
+  
+      if (item.metadata.asset.quantity > 1) {
+        continue;
       }
     }
 
-    // check expirationTime of first item
-    let curTime = new Date ();
-    let limitTime = new Date ( curTime );
-    limitTime.setHours ( curTime.getHours() + Number(INTERVAL_TIME || 6) );
-
-    if (Number(item.expirationTime) < Number(limitTime.getTime()) / 1000 && orders.length > 1) {
-      continue;
-    }
-
-    if (item.currentPrice / item.metadata.asset.quantity > topPrice) {
-      topPrice = Number(item.currentPrice / item.metadata.asset.quantity);
+    if (item.currentPrice > topPrice) {
+      topPrice = Number(item.currentPrice);
       topBidder = item.makerAccount.address;
       schemaName = item.metadata.schema;
     }
   }
-
-  // if (topPrice == 0) {
-  //   console.log("There is no less than 1 WETH offer.");
-  //   return;
-  // }
 
   // don't outbid self
   if (topBidder == WALLET_ADDRESS.toLowerCase()) {
